@@ -3,6 +3,29 @@
 #
 # set up environment variables for our use
 #-------------------------------------------------------------------------------
+function __tenv_set_env_var -d 'Set environment variable using section_name from file_path' -a section_name file_path
+    # section_name must be a regular expression to make sure the best possible match
+    # Get all the lines after the regex of section_name
+    set -x lines (grep -A 50 -E "\[$section_name\]" $file_path)
+    # echo $lines
+
+    for line in $lines[2..-1]
+        # The grep will return 0 when match
+        if echo $line | grep -E '^ *\[.*\] *$' > /dev/null
+            # Beginning of new section
+            break
+        end
+
+        # Parse the line and set envrionment variables
+        set -x env_name (echo $line | grep -Eo '^ *[^=]+ *' | xargs | tr /a-z/ /A-Z/)
+        set -x env_val (echo $line | grep -Eo ' *[^=]+ *$' | xargs)
+
+        echo "Setting $env_name to WAIT A SECOND, WHY SHOULD I PRINT THIS OUT AGAIN?"
+
+        set -xg $env_name $env_val
+    end
+end
+
 function tenv -d 'Set up env vars' -a file_type -a profile
     set -x env_dir ~/.env
 
@@ -17,7 +40,8 @@ function tenv -d 'Set up env vars' -a file_type -a profile
 
         # Confirm that the profile is there
         if fgrep -q "[$profile]" $config_file
-            echo 'All is well, setting env var now'
+            # echo 'All is well, setting env var now'
+            __tenv_set_env_var $profile $config_file
         else
             echo "Could NOT find profile $profile in config file ($config_file). No env-var set"
         end
