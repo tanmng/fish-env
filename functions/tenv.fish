@@ -17,12 +17,21 @@ function __tenv_set_env_var -d 'Set environment variable using section_name from
         end
 
         # Parse the line and set envrionment variables
-        set -x env_name (echo $line | grep -Eo '^ *[^=]+ *' | xargs | tr /a-z/ /A-Z/)
-        set -x env_val (echo $line | grep -Eo ' *[^=]+ *$' | xargs)
+        # echo $line
+        set -x env_name (string match -r '^ *[^=]+ *' $line | xargs | tr /a-z/ /A-Z/)
+        set -x env_val (string match -r ' *[^=]+ *$' $line 2> /dev/null | xargs)
 
-        echo "Setting $env_name to WAIT A SECOND, WHY SHOULD I PRINT THIS OUT AGAIN?"
 
-        set -xg $env_name $env_val
+        if [ "$env_name" != "" ]
+            # Print something beautiful
+            echo -n "Setting "
+            set_color blue; echo -n $env_name; set_color normal
+            echo -n " to "
+            set_color red; echo -n "WAIT A SECOND, WHY SHOULD I PRINT THIS OUT AGAIN?"; set_color normal
+            echo
+
+            set -xg $env_name $env_val
+        end
     end
 end
 
