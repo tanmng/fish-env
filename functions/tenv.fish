@@ -16,6 +16,13 @@ function __tenv_set_env_var -d 'Set environment variable using section_name from
             break
         end
 
+        # Check if it's a comment
+        string match -r '#.*' $line > /dev/null
+        if test $status -eq 0
+            # Comment line
+            break
+        end
+
         # Parse the line and set envrionment variables
         # echo $line
         set -x env_name (string match -r '^ *[^=]+ *' $line | xargs | tr /a-z/ /A-Z/)
